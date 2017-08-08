@@ -93,7 +93,28 @@ app.directive('coalaonline',[ '$http', function ($http) {
                         elem = Object.keys(element)[0];
                         nop_json[elem] = "";
                     })
-                    $scope.sections[section]["bears"][bear] = nop_json;
+
+                    op_json = {};
+                    op = data.data.metadata.optional_params;
+                    data.data["BEAR_DEPS"].forEach(function(dep){
+                        dep.metadata.optional_params.forEach(function(dep_op){
+                            if (Array.isArray(dep_op)){
+                                dep_op.forEach(function(dn){
+                                    op.push(dn);
+                                })
+                            } else {
+                                op.push(dep_op);
+                            }
+                        })
+                    })
+                    op.forEach(function(element){
+                        elem = Object.keys(element)[0];
+                        op_json[elem] = "";
+                    })
+                    $scope.sections[section]["bears"][bear] = {};
+                    $scope.sections[section]["bears"][bear]['nop'] = nop_json;
+                    $scope.sections[section]["bears"][bear]['op'] = op_json;
+                    console.log($scope.sections[section]["bears"]);
                 }, function (failure) {
                     // bear not found at webServices
                     console.log(failure);
@@ -103,6 +124,9 @@ app.directive('coalaonline',[ '$http', function ($http) {
                 });
             }
             $scope.run_coala = function(){
+
+                $scope.sections = $scope.pre_format_settings($scope.sections);
+
                 var json = {
                     "sections" : $scope.sections,
                     "mode" : "coala",
@@ -157,6 +181,14 @@ app.directive('coalaonline',[ '$http', function ($http) {
 
             $scope.remove_sections = function(section){
                 delete $scope.sections[section]
+            }
+
+            $scope.add_optional_settings = function (section, bear) {
+                $scope.current_bear = bear;
+                $(document).ready(function () {
+                    $('.modal').modal();
+                    $('#settingmodal').modal('open');
+                })
             }
         },
         controllerAs: 'toc'
